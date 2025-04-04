@@ -33,31 +33,40 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// Chỉ test BookingController, loại bỏ JwtRequestFilter để không bị lỗi auth
 @WebMvcTest(value = BookingController.class, excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtRequestFilter.class)
 })
-public  class BookingControllerTest {
+public class BookingControllerTest {
 
+    // Dùng để giả lập các request HTTP
     @Autowired
     private MockMvc mockMvc;
 
+    // Mock service để không gọi thật đến logic bên trong
     @MockBean
     private BookingService bookingService;
 
+    // Inject controller vào test
     @InjectMocks
     private BookingController bookingController;
 
+    // Mock một booking và DTO tương ứng
     @Mock
     private Booking booking;
 
     private BookingDTO bookingDTO;
 
+    // Thiết lập dữ liệu dùng chung trước mỗi test
     @BeforeEach
     void setUp() {
+        // Khởi tạo các mock
         MockitoAnnotations.openMocks(this);
+
+        // Gắn controller vào mockMvc để test độc lập
         mockMvc = MockMvcBuilders.standaloneSetup(bookingController).build();
 
-        // Tạo dữ liệu giả để tránh null
+        // Tạo dữ liệu giả: tài khoản, dịch vụ phụ, voucher
         Account account = new Account();
         account.setId(1);
 
@@ -67,57 +76,75 @@ public  class BookingControllerTest {
         Voucher voucher = new Voucher();
         voucher.setId(1);
 
+        // Gán dữ liệu vào booking
         booking = new Booking();
         booking.setAccount(account);
         booking.setMoreServices(moreService);
         booking.setVouchers(voucher);
 
+        // Tạo DTO từ booking
         bookingDTO = new BookingDTO(booking);
     }
 
-
-
+    // Test API lấy tất cả booking (ROLE: ADMIN)
     @Test
     @WithMockUser(roles = {"ADMIN"})
     void testFindAll() throws Exception {
+        // Khi gọi service thì trả về danh sách chứa 1 booking
         when(bookingService.findBookings()).thenReturn(Collections.singletonList(booking));
 
+        // Gửi request GET đến /booking/find
         mockMvc.perform(get("/booking/find")
                         .contentType(MediaType.APPLICATION_JSON))
+                // Kiểm tra trả về mã 200 OK
                 .andExpect(status().isOk())
+                // Kiểm tra phần tử đầu tiên có đúng booking_id không
                 .andExpect(jsonPath("$[0].booking_id").value(bookingDTO.getBooking_id()));
     }
 
+    // Test API tìm booking theo ID (ROLE: USER)
     @Test
     @WithMockUser(roles = {"USER"})
     void testFindById() throws Exception {
+        // Khi gọi service với ID bất kỳ thì trả về booking giả
         when(bookingService.findById(anyInt())).thenReturn(booking);
 
+        // Gửi request GET đến /booking/findId/1
         mockMvc.perform(get("/booking/findId/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.booking_id").value(bookingDTO.getBooking_id()));
     }
 
+    // Test API tạo mới booking (ROLE: USER)
     @Test
     @WithMockUser(roles = {"USER"})
     void testCreateBooking() throws Exception {
+        // Tạo request giả
         BookingRequest request = new BookingRequest();
+
+        // Khi gọi createBooking thì trả về booking giả
         when(bookingService.createBooking(any(BookingRequest.class))).thenReturn(booking);
 
+        // Gửi request POST đến /booking/create
         mockMvc.perform(post("/booking/create")
                         .contentType(MediaType.APPLICATION_JSON)
+                        // Chuyển request thành JSON
                         .content(new ObjectMapper().writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.booking_id").value(bookingDTO.getBooking_id()));
     }
 
+    // Test API cập nhật booking (ROLE: USER)
     @Test
     @WithMockUser(roles = {"USER"})
     void testUpdateBooking() throws Exception {
         BookingRequest request = new BookingRequest();
+
+        // Giả lập service update trả về booking
         when(bookingService.updateBooking(anyInt(), any(BookingRequest.class))).thenReturn(booking);
 
+        // Gửi request PUT đến /booking/update/1
         mockMvc.perform(put("/booking/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(request)))
@@ -125,11 +152,14 @@ public  class BookingControllerTest {
                 .andExpect(jsonPath("$.booking_id").value(bookingDTO.getBooking_id()));
     }
 
+    // Test API đổi trạng thái booking (ROLE: ADMIN)
     @Test
     @WithMockUser(roles = {"ADMIN"})
     void testChangeStatus() throws Exception {
+        // Khi gọi changeStatus thì trả về booking giả
         when(bookingService.changeStatus(anyInt(), any())).thenReturn(booking);
 
+        // Gửi request POST với tham số status
         mockMvc.perform(post("/booking/changeStatus/1")
                         .param("status", "CONFIRMED")
                         .contentType(MediaType.APPLICATION_JSON))

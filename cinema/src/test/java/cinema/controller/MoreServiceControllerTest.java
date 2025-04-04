@@ -44,6 +44,7 @@ class MoreServiceControllerTest {
     private MoreServiceDTO moreServiceDTO;
     private MoreServiceRequest moreServiceRequest;
 
+    // Khởi tạo dữ liệu giả lập và cấu hình user có quyền ADMIN cho các test.
     @BeforeEach
     void setUp() {
         moreService = new MoreService();
@@ -68,6 +69,7 @@ class MoreServiceControllerTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
+    // Kiểm tra chức năng tìm kiếm tất cả dịch vụ.
     @Test
     void testFindServices() throws Exception {
         List<MoreServiceDTO> services = Arrays.asList(moreServiceDTO);
@@ -75,20 +77,22 @@ class MoreServiceControllerTest {
 
         mockMvc.perform(get("/moreService/find")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].service_name").value("1"));
+                .andExpect(status().isOk())  // Kiểm tra mã trạng thái trả về là OK
+                .andExpect(jsonPath("$.size()").value(1)) // Kiểm tra kích thước danh sách trả về là 1
+                .andExpect(jsonPath("$[0].service_name").value("1"));  // Kiểm tra tên dịch vụ trong phản hồi
     }
 
+    // Kiểm tra chức năng tìm kiếm dịch vụ theo ID.
     @Test
     void testFindServiceById() throws Exception {
         when(moreServiceService.findById(1)).thenReturn(moreService);
 
         mockMvc.perform(get("/moreService/findId/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.service_name").value("1"));
+                .andExpect(status().isOk())  // Kiểm tra mã trạng thái trả về là OK
+                .andExpect(jsonPath("$.service_name").value("1")); // Kiểm tra tên dịch vụ trong phản hồi
     }
 
+    // Mục đích: Kiểm tra chức năng tạo dịch vụ mới.
     @Test
     void testCreateService() throws Exception {
         when(moreServiceService.createService(Mockito.any(MoreServiceRequest.class))).thenReturn(moreService);
@@ -96,10 +100,11 @@ class MoreServiceControllerTest {
         mockMvc.perform(post("/moreService/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(moreServiceRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.service_name").value("1"));
+                .andExpect(status().isCreated())  // Kiểm tra mã trạng thái trả về là Created
+                .andExpect(jsonPath("$.service_name").value("1"));  // Kiểm tra tên dịch vụ trong phản hồi
     }
 
+    //  Kiểm tra chức năng cập nhật dịch vụ.
     @Test
     void testUpdateService() throws Exception {
         when(moreServiceService.updateService(Mockito.eq(1), Mockito.any(MoreServiceRequest.class))).thenReturn(moreService);
@@ -107,10 +112,11 @@ class MoreServiceControllerTest {
         mockMvc.perform(put("/moreService/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(moreServiceRequest)))
-                .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.service_name").value("1"));
+                .andExpect(status().isAccepted())  // Kiểm tra mã trạng thái trả về là Accepted
+                .andExpect(jsonPath("$.service_name").value("1"));  // Kiểm tra tên dịch vụ trong phản hồi
     }
 
+    // Kiểm tra chức năng thay đổi trạng thái dịch vụ.
     @Test
     void testChangeStatus() throws Exception {
         when(moreServiceService.changeStatus(1, "INACTIVE")).thenReturn(moreService);
@@ -118,17 +124,18 @@ class MoreServiceControllerTest {
         mockMvc.perform(post("/moreService/changeStatus/1")
                         .param("status", "INACTIVE")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isAccepted())
-                .andExpect(jsonPath("$.service_name").value("1"));
+                .andExpect(status().isAccepted())  // Kiểm tra mã trạng thái trả về là Accepted
+                .andExpect(jsonPath("$.service_name").value("1"));  // Kiểm tra tên dịch vụ trong phản hồi
     }
 
+    // Kiểm tra chức năng tìm các dịch vụ có trạng thái ACTIVE.
     @Test
     void testFindActiveServices() throws Exception {
         when(moreServiceService.findStatusActive()).thenReturn(List.of(moreService));
 
         mockMvc.perform(get("/moreService/findActive"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].service_name").value("1"));
+                .andExpect(status().isOk())  // Kiểm tra mã trạng thái trả về là OK
+                .andExpect(jsonPath("$.size()").value(1))  // Kiểm tra kích thước danh sách trả về là 1
+                .andExpect(jsonPath("$[0].service_name").value("1"));  // Kiểm tra tên dịch vụ trong phản hồi
     }
 }

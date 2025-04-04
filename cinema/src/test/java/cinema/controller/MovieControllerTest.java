@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MovieControllerTest {
 
-    @Mock //Sẽ chỉ thực hiện giả lập, không lưu trực tiêp vào db
+    @Mock // Sẽ chỉ thực hiện giả lập, không lưu trực tiếp vào db
     private MovieService movieService;
 
     @InjectMocks
@@ -37,6 +37,7 @@ class MovieControllerTest {
     private Movie movie;
     private MovieRequest movieRequest;
 
+    // Khởi tạo dữ liệu giả lập cho các kiểm thử.
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -61,69 +62,74 @@ class MovieControllerTest {
         movieRequest.setActor("Matthew McConaughey");
     }
 
+    // Kiểm tra chức năng tìm kiếm danh sách các phim.
     @Test
     void testFindMovies() {
         when(movieService.findMovies()).thenReturn(Arrays.asList(movie));
 
         ResponseEntity<?> response = movieController.findMovies();
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCodeValue()); // Kiểm tra mã trạng thái trả về là OK
         assertNotNull(response.getBody());
 
         List<MovieDTO> movieDTOS = (List<MovieDTO>) response.getBody();
-        assertEquals(1, movieDTOS.size());
-        assertEquals("Inception", movieDTOS.get(0).getName());
+        assertEquals(1, movieDTOS.size()); // Kiểm tra có đúng 1 bộ phim
+        assertEquals("Inception", movieDTOS.get(0).getName()); // Kiểm tra tên phim
     }
 
+    // Kiểm tra chức năng tạo phim mới.
     @Test
     void testCreateMovie() {
         when(movieService.createMovie(any(MovieRequest.class))).thenReturn(movie);
 
         ResponseEntity<?> response = movieController.createMovie(movieRequest);
 
-        assertEquals(201, response.getStatusCodeValue());
+        assertEquals(201, response.getStatusCodeValue()); // Kiểm tra mã trạng thái trả về là Created
         assertNotNull(response.getBody());
 
         MovieDTO createdMovie = (MovieDTO) response.getBody();
-        assertEquals("Inception", createdMovie.getName());
+        assertEquals("Inception", createdMovie.getName()); // Kiểm tra tên phim sau khi tạo
     }
 
+    // Kiểm tra chức năng cập nhật thông tin phim.
     @Test
     void testUpdateMovie() {
         when(movieService.updateMovie(eq(1), any(MovieRequest.class))).thenReturn(movie);
 
         ResponseEntity<?> response = movieController.updateMovie(1, movieRequest);
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCodeValue()); // Kiểm tra mã trạng thái trả về là OK
         assertNotNull(response.getBody());
 
         MovieDTO updatedMovie = (MovieDTO) response.getBody();
-        assertEquals("Inception", updatedMovie.getName());
+        assertEquals("Inception", updatedMovie.getName()); // Kiểm tra tên phim sau khi cập nhật
     }
 
+    //  Kiểm tra chức năng thay đổi trạng thái phim (Ví dụ: từ đang chiếu sang sắp chiếu).
     @Test
     void testChangeStatus() {
         when(movieService.changeStatus(eq(1), anyString())).thenReturn(movie);
 
         ResponseEntity<?> response = movieController.changeStatus(1, "COMING_SOON");
 
-        assertEquals(201, response.getStatusCodeValue());
+        assertEquals(201, response.getStatusCodeValue()); // Kiểm tra mã trạng thái trả về là Created
         assertNotNull(response.getBody());
 
         MovieDTO movieWithStatusChanged = (MovieDTO) response.getBody();
-        assertEquals("Inception", movieWithStatusChanged.getName());
+        assertEquals("Inception", movieWithStatusChanged.getName()); // Kiểm tra tên phim sau khi thay đổi trạng thái
     }
 
+    // Kiểm tra chức năng tìm kiếm phim theo ID.
     @Test
     void testFindById() {
         when(movieService.findById(eq(1))).thenReturn(movie);
 
         ResponseEntity<?> response = movieController.findById(1);
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCodeValue()); // Kiểm tra mã trạng thái trả về là OK
         assertNotNull(response.getBody());
 
         MovieDTO foundMovie = (MovieDTO) response.getBody();
-        assertEquals("Inception", foundMovie.getName());
+        assertEquals("Inception", foundMovie.getName()); // Kiểm tra tên phim sau khi tìm theo ID
     }
 }

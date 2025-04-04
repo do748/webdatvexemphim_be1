@@ -34,34 +34,38 @@ class PaymentControllerTest {
 
     private Payment payment;
 
+    // Khởi tạo dữ liệu giả lập cho các kiểm thử.
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(paymentController).build();
 
-        // Setup sample Payment object
+        // Setup đối tượng Payment mẫu
         payment = new Payment();
         payment.setId(1);
         payment.setType(TypePayment.E_WALLET);
         payment.setAddress("123 Main St");
     }
 
+    // Kiểm tra API để lấy danh sách các khoản thanh toán.
     @Test
     void testFindAllPayments() throws Exception {
         when(paymentService.findPayments()).thenReturn(Collections.singletonList(payment));
 
         mockMvc.perform(get("/payment/find"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()); // Kiểm tra mã trạng thái trả về là OK
     }
 
+    // Kiểm tra API để tìm một khoản thanh toán theo ID.
     @Test
     void testFindPaymentById() throws Exception {
         when(paymentService.findPaymentById(1)).thenReturn(payment);
 
         mockMvc.perform(get("/payment/findId/1"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()); // Kiểm tra mã trạng thái trả về là OK
     }
 
+    // Mục đích: Kiểm tra API để tạo mới một khoản thanh toán.
     @Test
     void testCreatePayment() throws Exception {
         PaymentRequest request = new PaymentRequest();
@@ -73,9 +77,10 @@ class PaymentControllerTest {
         mockMvc.perform(post("/payment/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()); // Kiểm tra mã trạng thái trả về là OK
     }
 
+    // Kiểm tra API để cập nhật một khoản thanh toán.
     @Test
     void testUpdatePayment() throws Exception {
         PaymentRequest request = new PaymentRequest();
@@ -87,6 +92,6 @@ class PaymentControllerTest {
         mockMvc.perform(put("/payment/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk()); // Kiểm tra mã trạng thái trả về là OK
     }
 }
